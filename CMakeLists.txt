@@ -18,4 +18,4 @@ set(EXECUTABLE_NAME app_debug)
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE alglib)
-target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
