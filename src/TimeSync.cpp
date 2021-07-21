@@ -5,8 +5,12 @@
 #include "TimeSync.h"
 
 #include "xtensor/xnorm.hpp"
+#include "xtensor/xview.hpp"
 
 #include <algorithm>
+
+// Placeholder '_' in xt::range
+using namespace xt::placeholders;
 
 TimeSync::TimeSync(xt::xarray<double> gyro_first, xt::xarray<double> gyro_second,
                    xt::xarray<double> ts_first, xt::xarray<double> ts_second, bool do_resample=true):
@@ -37,13 +41,34 @@ xt::xarray<double> TimeSync::interpolate() {
     xt::xarray<double> cross_cor = get_initial_index();
     size_t index_init = std::distance(cross_cor.begin(), std::max_element(cross_cor.begin(), cross_cor.end())) + shift;
 
+    xt::xarray<double> gyro_first_tmp;
+    xt::xarray<double> gyro_second_tmp;
+
     if (index_init > 0) {
-
+        gyro_first_tmp = xt::view(gyro_first_, xt::range(_, -index_init));
+        gyro_second_tmp = xt::view(gyro_second_, xt::range(index_init, _));
     } else if (index_init < 0){
-
+        gyro_first_tmp = xt::view(gyro_first_, xt::range(-index_init, _));
+        gyro_second_tmp = xt::view(gyro_second_, xt::range(_, index_init));
     } else {
-
+        gyro_first_tmp = gyro_first_;
+        gyro_second_tmp = gyro_second_;
     }
+
+    size_t right_border = std::min(gyro_first_tmp.shape()[0], gyro_first_tmp.shape()[1]);
+
+    gyro_first_tmp = xt::view(gyro_first_tmp, xt::range(_, right_border));
+    gyro_second_tmp = xt::view(gyro_second_tmp, xt::range(_, right_border));
+
+    // TODO: Can't build xtensor-blas, undefined reference to `dgetrf_'
+    // Calibration
+    //xt::xarray<double> M = (xt::transpose(gyro_second_tmp) * gyro_first_tmp);
+
+    // Cross-correlation re-estimation
+    cross_cor = get_initial_index();
+    index_init = std::distance(cross_cor.begin(), std::max_element(cross_cor.begin(), cross_cor.end()));
+
+    // Cross-correlation, based cubic spline Coefficient
 }
 
 void TimeSync::obtain_delay() {
