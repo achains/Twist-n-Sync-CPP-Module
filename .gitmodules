@@ -1,3 +1,6 @@
 [submodule "lib/eigen"]
 	path = lib/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "lib/libInterpolate"]
+	path = lib/libInterpolate
+	url = https://github.com/CD3/libInterpolate.git

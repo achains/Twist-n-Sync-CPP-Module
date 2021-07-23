@@ -10,12 +10,18 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_subdirectory(lib)
+# add_subdirectory(lib)
 
-set(SOURCE_FILES main.cpp src/TimeSync.cpp)
+set(SOURCE_FILES main.cpp src/TimeSync.cpp src/util/TSUtil.cpp src/util/TSUtil.cpp)
 set(EXECUTABLE_NAME app_debug)
+
+# configuring boost
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.74.0 REQUIRED COMPONENTS container program_options)
+include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE alglib)
 target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
+target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/libInterpolate/src")
+target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
