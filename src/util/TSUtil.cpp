@@ -4,14 +4,24 @@
 
 #include "TSUtil.h"
 #include "unsupported/Eigen/FFT"
+#include "libInterpolate/Interpolate.hpp"
 
-#include <memory>
 #include <numeric>
 
 namespace TSUtil {
 
-    Eigen::VectorXd arangeEigen(const double &start, const double &finish, const double &step) {
-        return Eigen::VectorXd::LinSpaced(static_cast<long>((finish - start) / step), start, finish);
+    Eigen::VectorXd arangeEigenDeprecate(const double &start, const double &finish, const double &step) {
+        return Eigen::VectorXd::LinSpaced(static_cast<long>(std::ceil((finish - start) / step)), start, finish);
+    }
+
+    Eigen::VectorXd arangeEigen(double start, double const & stop, double const & step){
+        Eigen::Index size = std::ceil((stop - start) / step);
+        Eigen::VectorXd result(size);
+        for (Eigen::Index i = 0; i < size; ++i) {
+            result[i] = start;
+            start += step;
+        }
+        return result;
     }
 
     Eigen::VectorXd adjDiffEigen(const Eigen::VectorXd &data) {
@@ -39,6 +49,19 @@ namespace TSUtil {
             norm_data[i++] = row.norm();
         }
         return norm_data;
+    }
+
+    Eigen::VectorXd interpolate(Eigen::VectorXd const & x_old, Eigen::VectorXd const & y_old,
+                                Eigen::VectorXd const & x_new){
+
+        _1D::CubicSplineInterpolator<double> interp;
+        interp.setData(x_old.size(), x_old.data(), y_old.data());
+
+        Eigen::VectorXd y_new(x_new.size());
+        for (Eigen::Index i = 0; i < y_new.size(); ++i){
+            y_new[i] = interp(x_new[i]);
+        }
+        return y_new;
     }
 
     std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2) {

@@ -11,7 +11,11 @@
 
 namespace TSUtil {
     // Implementation of numpy.arange function
-    Eigen::VectorXd arangeEigen(double const & start, double const & finish, double const & step);
+    // TODO: This implementation differs from np.arange(). Fix until [28.07]. Instead use arangeEigen method!
+    Eigen::VectorXd arangeEigenDeprecate(double const & start, double const & finish, double const & step);
+
+    // Implementation of numpy.arange function
+    Eigen::VectorXd arangeEigen(double start, double const & stop, double const & step = 1.0);
 
     // Implementation of numpy.diff function
     Eigen::VectorXd adjDiffEigen(Eigen::VectorXd const & data);
@@ -33,6 +37,10 @@ namespace TSUtil {
     Eigen::VectorXd vectorToEigVectorXd(std::vector<double> & data);
 
     Eigen::VectorXd getNormOfRows(Eigen::MatrixX3d const & data);
+
+    // Returns values of CubicSpline(x_old, y_old) at points of x_new
+    Eigen::VectorXd interpolate(Eigen::VectorXd const & x_old, Eigen::VectorXd const & y_old,
+                                Eigen::VectorXd const & x_new);
 
     struct CorrData{
         Eigen::VectorXd cross_cor;
