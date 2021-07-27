@@ -4,7 +4,7 @@
 
 #include "TimeSync.h"
 #include "util/TSUtil.h"
-
+#include "util/CubicSpline.h"
 
 TimeSync::TimeSync(std::vector<std::vector<double>> & gyro_first,
                    std::vector<std::vector<double>> & gyro_second,
@@ -28,6 +28,15 @@ TSUtil::CorrData TimeSync::getInitialIndex() const {
     return {cross_cor, std::distance(cross_cor.begin(), std::max(cross_cor.begin(), cross_cor.end()))};
 }
 
+Eigen::MatrixX3d TimeSync::interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
+                                           Eigen::VectorXd const & ts_new) {
+    Eigen::MatrixX3d gyro_new(gyro_old.rows(), 3);
+    gyro_new << TSUtil::interpolate(ts_old, gyro_old(Eigen::all, 0), ts_new),
+                TSUtil::interpolate(ts_old, gyro_old(Eigen::all, 1), ts_new),
+                TSUtil::interpolate(ts_old, gyro_old(Eigen::all, 2), ts_new);
+    return gyro_new;
+}
+
 void TimeSync::resample(double const & accuracy){
     double time_first_mean = TSUtil::adjDiffEigen(ts_first_).mean();
     double time_second_mean = TSUtil::adjDiffEigen(ts_second_).mean();
@@ -38,7 +47,8 @@ void TimeSync::resample(double const & accuracy){
         Eigen::VectorXd ts_first_new = TSUtil::arangeEigen(ts_first_[0], *ts_first_.end(), dt);
         Eigen::VectorXd ts_second_new = TSUtil::arangeEigen(ts_second_[0], *ts_second_.end(), dt);
 
-        //TODO: Interpolation function
+        gyro_first_ = TimeSync::interpolateGyro(ts_first_, gyro_first_, ts_first_new);
+        gyro_second_ = TimeSync::interpolateGyro(ts_second_, gyro_second_, ts_second_new);
     }
 }
 
@@ -74,5 +84,6 @@ void TimeSync::obtainDelay(){
     corr_data = TimeSync::getInitialIndex();
 
     // Cross-cor, based cubic spline coefficients
-    // TODO: Cubic Spline Interpolation
+    CubicSpline cubic_spline(TSUtil::arangeEigen(0., static_cast<double>(corr_data.cross_cor.size())),
+                                corr_data.cross_cor);;
 }
