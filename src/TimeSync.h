@@ -22,6 +22,9 @@ class TimeSync {
 
     void resample(double const & accuracy);
 
+    static Eigen::MatrixX3d interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
+                                            Eigen::VectorXd const & ts_new);
+
     TSUtil::CorrData getInitialIndex() const;
 
     // 3D angular velocities from devices' gyros

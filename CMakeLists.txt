@@ -12,7 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # add_subdirectory(lib)
 
-set(SOURCE_FILES main.cpp src/TimeSync.cpp src/util/TSUtil.cpp src/util/TSUtil.cpp)
+# add_compile_options("$<$<CONFIG:Debug>:-O2;-DELPP_THREAD_SAFE;-g>")
+
+set(SOURCE_FILES main.cpp src/TimeSync.cpp src/util/TSUtil.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp)
 set(EXECUTABLE_NAME app_debug)
 
 # configuring boost
@@ -24,4 +26,5 @@ add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 
 target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
 target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/libInterpolate/src")
+target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/spline/src")
 target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")

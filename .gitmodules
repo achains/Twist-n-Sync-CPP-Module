@@ -4,3 +4,6 @@
 [submodule "lib/libInterpolate"]
 	path = lib/libInterpolate
 	url = https://github.com/CD3/libInterpolate.git
+[submodule "lib/spline"]
+	path = lib/spline
+	url = https://github.com/ttk592/spline.git
