@@ -24,13 +24,16 @@ namespace TSUtil {
     // arg1 : Eigen::VectorXd
     // arg2 : Eigen::VectorXd
     // return : Eigen::VectorXd
-    Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1, Eigen::VectorXd & data_2);
+    Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1);
 
     // Implementation of scipy.signal.correlate function
     // arg1 : std::vector<double>
     // arg2 : std::vector<double>
     // return : std::vector<double>
     std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2);
+
+    // Implementation of np.roots
+    Eigen::VectorXcd polynomialRoots(Eigen::VectorXd const & coeffs);
 
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> & data);
 
