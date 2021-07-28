@@ -24,7 +24,7 @@ namespace TSUtil {
     // arg1 : Eigen::VectorXd
     // arg2 : Eigen::VectorXd
     // return : Eigen::VectorXd
-    Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1, Eigen::VectorXd & data_2);
+    Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1);
 
     // Implementation of scipy.signal.correlate function
     // arg1 : std::vector<double>
