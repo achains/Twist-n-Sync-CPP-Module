@@ -4,7 +4,7 @@
 
 #include "TSUtil.h"
 #include "unsupported/Eigen/FFT"
-#include "libInterpolate/Interpolate.hpp"
+#include "util/CubicSpline.h"
 
 #include <numeric>
 
@@ -54,14 +54,8 @@ namespace TSUtil {
     Eigen::VectorXd interpolate(Eigen::VectorXd const & x_old, Eigen::VectorXd const & y_old,
                                 Eigen::VectorXd const & x_new){
 
-        _1D::CubicSplineInterpolator<double> interp;
-        interp.setData(x_old.size(), x_old.data(), y_old.data());
-
-        Eigen::VectorXd y_new(x_new.size());
-        for (Eigen::Index i = 0; i < y_new.size(); ++i){
-            y_new[i] = interp(x_new[i]);
-        }
-        return y_new;
+        CubicSpline interp(x_old, y_old);
+        return interp.getValuesOnSegment(x_new);
     }
 
     std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2) {

@@ -3,7 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/eigen" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/lib/libInterpolate" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/spline" vcs="Git" />
   </component>
 </project>

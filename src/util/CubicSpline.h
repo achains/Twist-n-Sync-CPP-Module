@@ -15,6 +15,10 @@ class CubicSpline {
 
     Eigen::Matrix4Xd getCoefficients();
 
+    Eigen::VectorXd getValuesOnSegment(Eigen::VectorXd const &);
+
+    double operator() (double const & x);
+
  private:
     void calculateDerivative();
 
