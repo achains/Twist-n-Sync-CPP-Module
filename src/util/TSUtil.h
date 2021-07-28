@@ -32,6 +32,9 @@ namespace TSUtil {
     // return : std::vector<double>
     std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2);
 
+    // Implementation of np.roots
+    Eigen::VectorXcd polynomialRoots(Eigen::VectorXd const & coeffs);
+
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> & data);
 
     Eigen::VectorXd vectorToEigVectorXd(std::vector<double> & data);

@@ -4,6 +4,7 @@
 
 #include "TSUtil.h"
 #include "unsupported/Eigen/FFT"
+#include "unsupported/Eigen/Polynomials"
 #include "util/CubicSpline.h"
 
 #include <numeric>
@@ -56,6 +57,11 @@ namespace TSUtil {
 
         CubicSpline interp(x_old, y_old);
         return interp.getValuesOnSegment(x_new);
+    }
+
+    Eigen::VectorXcd quadraticRoots(Eigen::VectorXd const & coeffs){
+        Eigen::PolynomialSolver<double, 2> solver(coeffs);
+        return solver.roots();
     }
 
     std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2) {
