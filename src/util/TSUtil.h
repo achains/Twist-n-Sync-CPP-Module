@@ -24,7 +24,7 @@ namespace TSUtil {
     // arg1 : Eigen::VectorXd
     // arg2 : Eigen::VectorXd
     // return : Eigen::VectorXd
-    Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1);
+    Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1, Eigen::VectorXd & data_2);
 
     // Implementation of scipy.signal.correlate function
     // arg1 : std::vector<double>
@@ -33,7 +33,7 @@ namespace TSUtil {
     std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2);
 
     // Implementation of np.roots
-    Eigen::VectorXcd polynomialRoots(Eigen::VectorXd const & coeffs);
+    Eigen::VectorXd quadraticRoots(Eigen::VectorXd const & coeffs);
 
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> & data);
 
@@ -41,7 +41,7 @@ namespace TSUtil {
 
     Eigen::VectorXd getNormOfRows(Eigen::MatrixX3d const & data);
 
-    // Returns values of CubicSpline(x_old, y_old) at points of x_new
+    // Return values of CubicSpline(x_old, y_old) at points of x_new
     Eigen::VectorXd interpolate(Eigen::VectorXd const & x_old, Eigen::VectorXd const & y_old,
                                 Eigen::VectorXd const & x_new);
 
