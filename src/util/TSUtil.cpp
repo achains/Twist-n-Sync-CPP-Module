@@ -33,7 +33,7 @@ namespace TSUtil {
     }
 
     Eigen::VectorXd vectorToEigVectorXd(std::vector<double> &data) {
-        return Eigen::Map<Eigen::VectorXd>(data.data(), static_cast<int> (data.size()));
+        return Eigen::Map<Eigen::VectorXd>(data.data(), static_cast<Eigen::Index> (data.size()));
     }
 
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> &data) {
@@ -130,6 +130,6 @@ namespace TSUtil {
         cross_cor << unbiased_result(Eigen::seq(shift_size, Eigen::last)),
                      unbiased_result(Eigen::seq(0, shift_size - 1));
 
-        return cross_cor;
+        return cross_cor.reverse();
     }
 }

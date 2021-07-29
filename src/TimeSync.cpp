@@ -10,6 +10,9 @@
 
 #include <numeric>
 
+//TODO: remove after debug
+#include <iostream>
+
 TimeSync::TimeSync(std::vector<std::vector<double>> & gyro_first,
                    std::vector<std::vector<double>> & gyro_second,
                    std::vector<double> & ts_first,
@@ -28,8 +31,8 @@ TSUtil::CorrData TimeSync::getInitialIndex() const {
     Eigen::VectorXd norm_second = TSUtil::getNormOfRows(gyro_second_);
 
     Eigen::VectorXd cross_cor = TSUtil::eigenCrossCor(norm_first, norm_second);
-
-    return {cross_cor, std::distance(cross_cor.begin(), std::max(cross_cor.begin(), cross_cor.end()))};
+    // TODO: Seems that cross_cor is reversed to what we can get using scipy.signal.correlate
+    return {cross_cor, std::distance(cross_cor.begin(), std::max_element(cross_cor.begin(), cross_cor.end()))};
 }
 
 Eigen::MatrixX3d TimeSync::interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
@@ -76,7 +79,7 @@ void TimeSync::obtainDelay(){
         tmp_xx2 = gyro_second_(Eigen::seq(0, corr_data.initial_index), Eigen::all);
     }
 
-    size_t size = std::min(gyro_first_.rows(), gyro_second_.rows());
+    size_t size = std::min(tmp_xx1.rows(), tmp_xx2.rows());
     tmp_xx1 = tmp_xx1(Eigen::seq(0, size - 1), Eigen::all);
     tmp_xx2 = tmp_xx2(Eigen::seq(0, size - 1), Eigen::all);
 
@@ -93,7 +96,7 @@ void TimeSync::obtainDelay(){
 
     Eigen::Matrix4Xd spline_coefficients = cubic_spline.getCoefficients();
 
-    Eigen::VectorXd coeffs = spline_coefficients(Eigen::all, corr_data.initial_index);
+    Eigen::VectorXd coeffs = spline_coefficients.col(corr_data.initial_index);
 
     // Check cubic spline derivative sign and redefine initial_index if needed
     if (coeffs(Eigen::last - 1) < 0) {
@@ -101,22 +104,28 @@ void TimeSync::obtainDelay(){
         coeffs = spline_coefficients(Eigen::all, corr_data.initial_index);
     }
 
+
+    std::clog << " >>> Coefficients (c[3] + c[2] * x + c[1] * x^2 + c[0] * x^3): " << coeffs.transpose() << std::endl;
+
+    // TODO: On this stage coefficients' order should be just like in scipy.
+
     // Solve quadratic equation to obtain roots
     Eigen::Index order = coeffs.size() - 1;
     Eigen::VectorXd equation(order);
     for (auto i = 0; i < order; ++i){
         equation[i] = static_cast<double>(order - i) * coeffs[i];
     }
-    Eigen::VectorXd roots = TSUtil::quadraticRoots(equation);
+    Eigen::VectorXd roots = TSUtil::quadraticRoots(equation.reverse());
 
+    std::clog << " >>> Equation roots: " << roots.transpose() << std::endl;
 
-    auto result = *std::max(roots.begin(), roots.end());
+    auto result = *std::max_element(roots.begin(), roots.end());
     std::vector<double> check_solution(order);
     for (int i = 0; i < order; ++i)
         check_solution[i] = static_cast<double>(order - i) * coeffs[i] *
                 std::pow((roots[0] + roots[1]) / 2, (order - i - 1));
     if (std::accumulate(check_solution.begin(), check_solution.end(), 0.0) < 0.0)
-        result = *std::min(roots.begin(), roots.end());
+        result = *std::min_element(roots.begin(), roots.end());
 
     time_delay_ = result;
 }

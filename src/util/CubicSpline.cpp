@@ -31,7 +31,7 @@ void CubicSpline::calculateDerivative() {
         derivative_[i++] = spline_.deriv(1, elem);
     }
 
-    derivative_.front()= derivative_.back() = 0.0;
+    derivative_.front() = derivative_.back() = 0.0;
 }
 
 Eigen::Matrix4Xd CubicSpline::getCoefficients() {
@@ -59,9 +59,10 @@ Eigen::Matrix4Xd CubicSpline::getCoefficients() {
     // There are N - 1 segments, where N is number of knots.
     // C, D already have A.size() - 1, where A.size() equals N
     // Getting rid of the last redundant element in A and B.
-    coefficients << A.transpose().block(0, 0, A.size() - 1, 1),
-                    B.transpose().block(0, 0, A.size() - 1, 1),
-                    C.transpose(), D.transpose();
+    coefficients << D.transpose(), C.transpose(),
+                    B.block(0, 0, A.size() - 1, 1).transpose(),
+                    A.block(0, 0, A.size() - 1, 1).transpose();
+
 
     return coefficients;
 }
