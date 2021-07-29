@@ -15,12 +15,15 @@ class TimeSync {
                       std::vector<std::vector<double>> & gyro_second,
                       std::vector<double> & ts_first,
                       std::vector<double> & ts_second,
-                      bool const & do_resample);
- private:
+                      bool const & do_resample = true);
 
     void obtainDelay();
 
     void resample(double const & accuracy);
+
+    double getTimeDelay() const;
+
+ private:
 
     static Eigen::MatrixX3d interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
                                             Eigen::VectorXd const & ts_new);
@@ -37,6 +40,7 @@ class TimeSync {
 
     // Flag to do resampling of angular velocities
     bool do_resample_;
+    double time_delay_ = 0.0;
 };
 
 

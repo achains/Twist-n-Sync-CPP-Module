@@ -6,11 +6,15 @@
 #include "util/TSUtil.h"
 #include "util/CubicSpline.h"
 
+#include "Eigen/Dense"
+
+#include <numeric>
+
 TimeSync::TimeSync(std::vector<std::vector<double>> & gyro_first,
                    std::vector<std::vector<double>> & gyro_second,
                    std::vector<double> & ts_first,
                    std::vector<double> & ts_second,
-                   bool const & do_resample = true):
+                   bool const & do_resample):
                         gyro_first_(std::move(TSUtil::vectorToEigMatrixX3d(gyro_first))),
                         gyro_second_(std::move(TSUtil::vectorToEigMatrixX3d(gyro_second))),
                         ts_first_(std::move(TSUtil::vectorToEigVectorXd(ts_first))),
@@ -44,8 +48,8 @@ void TimeSync::resample(double const & accuracy){
     double dt = std::min({accuracy, time_first_mean, time_second_mean});
 
     if (do_resample_){
-        Eigen::VectorXd ts_first_new = TSUtil::arangeEigen(ts_first_[0], *ts_first_.end(), dt);
-        Eigen::VectorXd ts_second_new = TSUtil::arangeEigen(ts_second_[0], *ts_second_.end(), dt);
+        Eigen::VectorXd ts_first_new = TSUtil::arangeEigen(ts_first_[0], *ts_first_.end() + dt, dt);
+        Eigen::VectorXd ts_second_new = TSUtil::arangeEigen(ts_second_[0], *ts_second_.end() + dt, dt);
 
         gyro_first_ = TimeSync::interpolateGyro(ts_first_, gyro_first_, ts_first_new);
         gyro_second_ = TimeSync::interpolateGyro(ts_second_, gyro_second_, ts_second_new);
@@ -54,10 +58,11 @@ void TimeSync::resample(double const & accuracy){
 
 void TimeSync::obtainDelay(){
     // Correction of index numbering
-    size_t shift = -gyro_first_.rows() + 1;
+    Eigen::Index shift = -gyro_first_.rows() + 1;
 
     // Cross-cor estimation
     TSUtil::CorrData corr_data = TimeSync::getInitialIndex();
+    corr_data.initial_index += shift;
 
     Eigen::MatrixX3d tmp_xx1 = gyro_first_;
     Eigen::MatrixX3d tmp_xx2 = gyro_second_;
@@ -76,14 +81,46 @@ void TimeSync::obtainDelay(){
     tmp_xx2 = tmp_xx2(Eigen::seq(0, size - 1), Eigen::all);
 
     // Calibration
-    //TODO: Build fails here. Fix until [24.07]
-//    Eigen::MatrixX3d M = (tmp_xx2.transpose() * tmp_xx1) * (tmp_xx1.transpose() * tmp_xx1).inverse();
-//    gyro_first_ = (M * gyro_first_.transpose()).transpose();
+    Eigen::MatrixX3d M = (tmp_xx2.transpose() * tmp_xx1) * (tmp_xx1.transpose() * tmp_xx1).inverse();
+    gyro_first_ = (M * gyro_first_.transpose()).transpose();
 
     // Cross-correlation re-estimation
     corr_data = TimeSync::getInitialIndex();
 
     // Cross-cor, based cubic spline coefficients
     CubicSpline cubic_spline(TSUtil::arangeEigen(0., static_cast<double>(corr_data.cross_cor.size())),
-                                corr_data.cross_cor);;
+                                corr_data.cross_cor);
+
+    Eigen::Matrix4Xd spline_coefficients = cubic_spline.getCoefficients();
+
+    Eigen::VectorXd coeffs = spline_coefficients(Eigen::all, corr_data.initial_index);
+
+    // Check cubic spline derivative sign and redefine initial_index if needed
+    if (coeffs(Eigen::last - 1) < 0) {
+        corr_data.initial_index -= 1;
+        coeffs = spline_coefficients(Eigen::all, corr_data.initial_index);
+    }
+
+    // Solve quadratic equation to obtain roots
+    Eigen::Index order = coeffs.size() - 1;
+    Eigen::VectorXd equation(order);
+    for (auto i = 0; i < order; ++i){
+        equation[i] = static_cast<double>(order - i) * coeffs[i];
+    }
+    Eigen::VectorXd roots = TSUtil::quadraticRoots(equation);
+
+
+    auto result = *std::max(roots.begin(), roots.end());
+    std::vector<double> check_solution(order);
+    for (int i = 0; i < order; ++i)
+        check_solution[i] = static_cast<double>(order - i) * coeffs[i] *
+                std::pow((roots[0] + roots[1]) / 2, (order - i - 1));
+    if (std::accumulate(check_solution.begin(), check_solution.end(), 0.0) < 0.0)
+        result = *std::min(roots.begin(), roots.end());
+
+    time_delay_ = result;
+}
+
+double TimeSync::getTimeDelay() const {
+    return time_delay_;
 }
