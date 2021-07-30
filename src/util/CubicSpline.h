@@ -11,7 +11,6 @@
 class CubicSpline {
  public:
     explicit CubicSpline(Eigen::VectorXd const & X, Eigen::VectorXd const & Y);
-    explicit CubicSpline(std::vector<double> const & X, std::vector<double> const & Y);
 
     Eigen::Matrix4Xd getCoefficients();
 
@@ -22,7 +21,7 @@ class CubicSpline {
  private:
     void calculateDerivative();
 
-    tk::spline spline_;
+    tk::spline m_spline_;
     std::vector<double> derivative_;
 };
 

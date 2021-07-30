@@ -5,30 +5,30 @@
 #include "CubicSpline.h"
 #include "TSUtil.h"
 
-CubicSpline::CubicSpline(Eigen::VectorXd const & X, Eigen::VectorXd const & Y):
-    spline_(std::vector<double>(X.data(), X.data() + X.size()),
-            std::vector<double>(Y.data(), Y.data() + Y.size())){}
+#include <iostream>
 
-CubicSpline::CubicSpline(std::vector<double> const & X, std::vector<double> const & Y):
-    spline_(X, Y, tk::spline::cspline_hermite) {}
+CubicSpline::CubicSpline(Eigen::VectorXd const & X, Eigen::VectorXd const & Y):
+        m_spline_(std::vector<double>(X.data(), X.data() + X.size()),
+                  std::vector<double>(Y.data(), Y.data() + Y.size())){}
+
 
 double CubicSpline::operator()(double const & x) {
-    return spline_(x);
+    return m_spline_(x);
 }
 
 Eigen::VectorXd CubicSpline::getValuesOnSegment(Eigen::VectorXd const & X) {
     Eigen::VectorXd y_values(X.size());
     for (Eigen::Index i = 0; i < X.size(); ++i)
-        y_values[i] = spline_(X[i]);
+        y_values[i] = m_spline_(X[i]);
 
     return y_values;
 }
 
 void CubicSpline::calculateDerivative() {
-    derivative_.resize(spline_.get_x().size());
+    derivative_.resize(m_spline_.get_x().size());
     size_t i = 0;
-    for (auto& elem: spline_.get_x()){
-        derivative_[i++] = spline_.deriv(1, elem);
+    for (auto& elem: m_spline_.get_x()){
+        derivative_[i++] = m_spline_.deriv(1, elem);
     }
 
     derivative_.front() = derivative_.back() = 0.0;
@@ -38,13 +38,13 @@ Eigen::Matrix4Xd CubicSpline::getCoefficients() {
     if (derivative_.empty()){
         calculateDerivative();
     }
-    std::vector<double> Y = spline_.get_y();
+    std::vector<double> Y = m_spline_.get_y();
     Eigen::VectorXd A = TSUtil::vectorToEigVectorXd(Y);
     Eigen::VectorXd B = TSUtil::vectorToEigVectorXd(derivative_);
 
     assert(A.size() == B.size());
 
-    double dx = spline_.get_x()[1] - spline_.get_x()[0];
+    double dx = m_spline_.get_x()[1] - m_spline_.get_x()[0];
 
     Eigen::VectorXd C(A.size() - 1);
     Eigen::VectorXd D(A.size() - 1);
