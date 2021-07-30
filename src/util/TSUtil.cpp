@@ -32,11 +32,11 @@ namespace TSUtil {
         return new_data(Eigen::seq(1, Eigen::last));
     }
 
-    Eigen::VectorXd vectorToEigVectorXd(std::vector<double> &data) {
+    Eigen::VectorXd vectorToEigVectorXd(std::vector<double> data) {
         return Eigen::Map<Eigen::VectorXd>(data.data(), static_cast<Eigen::Index> (data.size()));
     }
 
-    Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> &data) {
+    Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> data) {
         Eigen::MatrixX3d eigen_data(data.size(), 3);
         for (int i = 0; i < data.size(); ++i)
             eigen_data.row(i) = Eigen::Map<Eigen::VectorXd>(data[i].data(), 3);

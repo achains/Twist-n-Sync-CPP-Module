@@ -11,10 +11,10 @@
 
 class TimeSync {
  public:
-    explicit TimeSync(std::vector<std::vector<double>> & gyro_first,
-                      std::vector<std::vector<double>> & gyro_second,
-                      std::vector<double> & ts_first,
-                      std::vector<double> & ts_second,
+    explicit TimeSync(std::vector<std::vector<double>> const & gyro_first,
+                      std::vector<std::vector<double>> const & gyro_second,
+                      std::vector<double> const & ts_first,
+                      std::vector<double> const & ts_second,
                       bool const & do_resample = true);
 
     void obtainDelay();
@@ -37,6 +37,8 @@ class TimeSync {
     // Gyros' timestamps
     Eigen::VectorXd ts_first_;
     Eigen::VectorXd ts_second_;
+
+    double dt_ = 0.0;
 
     // Flag to do resampling of angular velocities
     bool do_resample_;

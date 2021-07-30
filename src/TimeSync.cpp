@@ -10,18 +10,18 @@
 
 #include <numeric>
 
-//TODO: remove after debug
+//TODO: Remove after debug
 #include <iostream>
 
-TimeSync::TimeSync(std::vector<std::vector<double>> & gyro_first,
-                   std::vector<std::vector<double>> & gyro_second,
-                   std::vector<double> & ts_first,
-                   std::vector<double> & ts_second,
+TimeSync::TimeSync(std::vector<std::vector<double>> const & gyro_first,
+                   std::vector<std::vector<double>> const & gyro_second,
+                   std::vector<double> const & ts_first,
+                   std::vector<double> const & ts_second,
                    bool const & do_resample):
-                        gyro_first_(std::move(TSUtil::vectorToEigMatrixX3d(gyro_first))),
-                        gyro_second_(std::move(TSUtil::vectorToEigMatrixX3d(gyro_second))),
-                        ts_first_(std::move(TSUtil::vectorToEigVectorXd(ts_first))),
-                        ts_second_(std::move(TSUtil::vectorToEigVectorXd(ts_second))),
+                        gyro_first_(TSUtil::vectorToEigMatrixX3d(gyro_first)),
+                        gyro_second_(TSUtil::vectorToEigMatrixX3d(gyro_second)),
+                        ts_first_(TSUtil::vectorToEigVectorXd(ts_first)),
+                        ts_second_(TSUtil::vectorToEigVectorXd(ts_second)),
                         do_resample_(do_resample) {}
 
 
@@ -31,7 +31,7 @@ TSUtil::CorrData TimeSync::getInitialIndex() const {
     Eigen::VectorXd norm_second = TSUtil::getNormOfRows(gyro_second_);
 
     Eigen::VectorXd cross_cor = TSUtil::eigenCrossCor(norm_first, norm_second);
-    // TODO: Seems that cross_cor is reversed to what we can get using scipy.signal.correlate
+
     return {cross_cor, std::distance(cross_cor.begin(), std::max_element(cross_cor.begin(), cross_cor.end()))};
 }
 
@@ -48,11 +48,11 @@ void TimeSync::resample(double const & accuracy){
     double time_first_mean = TSUtil::adjDiffEigen(ts_first_).mean();
     double time_second_mean = TSUtil::adjDiffEigen(ts_second_).mean();
 
-    double dt = std::min({accuracy, time_first_mean, time_second_mean});
+    dt_ = std::min({accuracy, time_first_mean, time_second_mean});
 
     if (do_resample_){
-        Eigen::VectorXd ts_first_new = TSUtil::arangeEigen(ts_first_[0], *ts_first_.end() + dt, dt);
-        Eigen::VectorXd ts_second_new = TSUtil::arangeEigen(ts_second_[0], *ts_second_.end() + dt, dt);
+        Eigen::VectorXd ts_first_new = TSUtil::arangeEigen(ts_first_[0], *ts_first_.end() + dt_, dt_);
+        Eigen::VectorXd ts_second_new = TSUtil::arangeEigen(ts_second_[0], *ts_second_.end() + dt_, dt_);
 
         gyro_first_ = TimeSync::interpolateGyro(ts_first_, gyro_first_, ts_first_new);
         gyro_second_ = TimeSync::interpolateGyro(ts_second_, gyro_second_, ts_second_new);
@@ -60,6 +60,9 @@ void TimeSync::resample(double const & accuracy){
 }
 
 void TimeSync::obtainDelay(){
+    // TODO: Remove after debug
+    std::clog.precision(17);
+
     // Correction of index numbering
     Eigen::Index shift = -gyro_first_.rows() + 1;
 
@@ -85,6 +88,7 @@ void TimeSync::obtainDelay(){
 
     // Calibration
     Eigen::MatrixX3d M = (tmp_xx2.transpose() * tmp_xx1) * (tmp_xx1.transpose() * tmp_xx1).inverse();
+
     gyro_first_ = (M * gyro_first_.transpose()).transpose();
 
     // Cross-correlation re-estimation
@@ -97,18 +101,15 @@ void TimeSync::obtainDelay(){
     Eigen::Matrix4Xd spline_coefficients = cubic_spline.getCoefficients();
 
     Eigen::VectorXd coeffs = spline_coefficients.col(corr_data.initial_index);
-
+    // TODO: Remove after debug
+    std::clog << "Coeffs: " << coeffs << std::endl;
     // Check cubic spline derivative sign and redefine initial_index if needed
     if (coeffs(Eigen::last - 1) < 0) {
         corr_data.initial_index -= 1;
         coeffs = spline_coefficients(Eigen::all, corr_data.initial_index);
     }
-
-
-    std::clog << " >>> Coefficients (c[3] + c[2] * x + c[1] * x^2 + c[0] * x^3): " << coeffs.transpose() << std::endl;
-
-    // TODO: On this stage coefficients' order should be just like in scipy.
-
+    // TODO: Remove after debug
+    std::clog << "Coeffs: " << coeffs << std::endl;
     // Solve quadratic equation to obtain roots
     Eigen::Index order = coeffs.size() - 1;
     Eigen::VectorXd equation(order);
@@ -116,9 +117,8 @@ void TimeSync::obtainDelay(){
         equation[i] = static_cast<double>(order - i) * coeffs[i];
     }
     Eigen::VectorXd roots = TSUtil::quadraticRoots(equation.reverse());
-
-    std::clog << " >>> Equation roots: " << roots.transpose() << std::endl;
-
+    // TODO: Remove after debug
+    std::clog << "Roots: " << roots.transpose() << std::endl;
     auto result = *std::max_element(roots.begin(), roots.end());
     std::vector<double> check_solution(order);
     for (int i = 0; i < order; ++i)
@@ -127,7 +127,7 @@ void TimeSync::obtainDelay(){
     if (std::accumulate(check_solution.begin(), check_solution.end(), 0.0) < 0.0)
         result = *std::min_element(roots.begin(), roots.end());
 
-    time_delay_ = result;
+    time_delay_ = (static_cast<double>(corr_data.initial_index + shift) + result) * dt_;
 }
 
 double TimeSync::getTimeDelay() const {
