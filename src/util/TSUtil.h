@@ -11,10 +11,6 @@
 
 namespace TSUtil {
     // Implementation of numpy.arange function
-    // TODO: This implementation differs from np.arange(). Fix until [28.07]. Instead use arangeEigen method!
-    Eigen::VectorXd arangeEigenDeprecate(double const & start, double const & finish, double const & step);
-
-    // Implementation of numpy.arange function
     Eigen::VectorXd arangeEigen(double start, double const & stop, double const & step = 1.0);
 
     // Implementation of numpy.diff function
@@ -25,12 +21,6 @@ namespace TSUtil {
     // arg2 : Eigen::VectorXd
     // return : Eigen::VectorXd
     Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1, Eigen::VectorXd & data_2);
-
-    // Implementation of scipy.signal.correlate function
-    // arg1 : std::vector<double>
-    // arg2 : std::vector<double>
-    // return : std::vector<double>
-    std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2);
 
     // Implementation of np.roots
     // Quadratic equation: coeffs[2] * x^2 + coeffs[1] * x + coeffs[0] = 0

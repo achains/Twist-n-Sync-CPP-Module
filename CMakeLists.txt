@@ -10,8 +10,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# add_compile_options("$<$<CONFIG:Debug>:-O2;-DELPP_THREAD_SAFE;-g>")
-
 set(SOURCE_FILES main.cpp src/TimeSync.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp)
 set(EXECUTABLE_NAME app_debug)
 

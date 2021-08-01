@@ -55,37 +55,5 @@ int main(){
 
     std::clog << ">>> time_delay = " << time_sync.getTimeDelay() << std::endl;
 
-    // ========================================
-    // Below are some experiments with coefficients. Leave this section commented.
-    // ========================================
-//
-//    Eigen::VectorXd X = TSUtil::arangeEigen(0.0, 20.0 + 0.5, 0.5);
-//    Eigen::VectorXd Y = Eigen::VectorXd::Random(X.size());
-//
-//    for (auto& elem: X) std::cout << ", " << elem;
-//    std::cout << std::endl;
-//    for (auto& elem: Y) std::cout << ", " << elem;
-//    std::cout << std::endl;
-//
-//    CubicSpline cubic(X, Y);
-//
-//    Eigen::VectorXd new_X = TSUtil::arangeEigen(0.0, 20 + 0.2, 0.2);
-//    std::cout << "Spline values:\n";
-//
-//    for (auto& elem: new_X) std::cout << ", " << elem;
-//    std::cout << std::endl;
-//    for (auto& elem: new_X) std::cout << ", " << cubic(elem);
-//    std::cout << std::endl;
-//
-//    Eigen::Matrix4Xd coefficients = cubic.getCoefficients();
-//
-//    std::cout << "Coefficients:\n";
-//    for (Eigen::Index i = 0; i < 4; ++i){
-//        for (auto elem: coefficients(i, Eigen::all)) std::cout << ", " << elem;
-//        std::cout << std::endl;
-//    }
-//
-//    std::cout << X(Eigen::last - 1);
-
     return 0;
 }

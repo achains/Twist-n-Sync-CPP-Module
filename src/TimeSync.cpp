@@ -10,8 +10,6 @@
 
 #include <numeric>
 
-//TODO: Remove after debug
-#include <iostream>
 
 TimeSync::TimeSync(std::vector<std::vector<double>> const & gyro_first,
                    std::vector<std::vector<double>> const & gyro_second,
@@ -60,8 +58,6 @@ void TimeSync::resample(double const & accuracy){
 }
 
 void TimeSync::obtainDelay(){
-    // TODO: Remove after debug
-    std::clog.precision(17);
 
     // Correction of index numbering
     Eigen::Index shift = -gyro_first_.rows() + 1;
@@ -101,15 +97,13 @@ void TimeSync::obtainDelay(){
     Eigen::Matrix4Xd spline_coefficients = cubic_spline.getCoefficients();
 
     Eigen::VectorXd coeffs = spline_coefficients.col(corr_data.initial_index);
-    // TODO: Remove after debug
-    std::clog << "Coeffs: " << coeffs << std::endl;
+
     // Check cubic spline derivative sign and redefine initial_index if needed
     if (coeffs(Eigen::last - 1) < 0) {
         corr_data.initial_index -= 1;
         coeffs = spline_coefficients(Eigen::all, corr_data.initial_index);
     }
-    // TODO: Remove after debug
-    std::clog << "Coeffs: " << coeffs << std::endl;
+
     // Solve quadratic equation to obtain roots
     Eigen::Index order = coeffs.size() - 1;
     Eigen::VectorXd equation(order);
@@ -117,8 +111,7 @@ void TimeSync::obtainDelay(){
         equation[i] = static_cast<double>(order - i) * coeffs[i];
     }
     Eigen::VectorXd roots = TSUtil::quadraticRoots(equation.reverse());
-    // TODO: Remove after debug
-    std::clog << "Roots: " << roots.transpose() << std::endl;
+
     auto result = *std::max_element(roots.begin(), roots.end());
     std::vector<double> check_solution(order);
     for (int i = 0; i < order; ++i)

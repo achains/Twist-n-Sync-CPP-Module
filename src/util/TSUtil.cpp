@@ -11,10 +11,6 @@
 
 namespace TSUtil {
 
-    Eigen::VectorXd arangeEigenDeprecate(const double &start, const double &finish, const double &step) {
-        return Eigen::VectorXd::LinSpaced(static_cast<long>(std::ceil((finish - start) / step)), start, finish);
-    }
-
     Eigen::VectorXd arangeEigen(double start, double const & stop, double const & step){
         Eigen::Index size = std::ceil((stop - start) / step);
         Eigen::VectorXd result(size);
@@ -62,40 +58,6 @@ namespace TSUtil {
     Eigen::VectorXd quadraticRoots(Eigen::VectorXd const & coeffs){
         Eigen::PolynomialSolver<double, 2> solver(coeffs);
         return solver.roots().real();
-    }
-
-    std::vector<double> eigenCrossCor(std::vector<double> & data_1, std::vector<double> & data_2) {
-        // Cross-cor(x, y) = iFFT(FFT(x) * conj(FFT(y)))
-
-        long shift_size = static_cast<long>(data_1.size());
-
-        // Length of Discrete Fourier Transform
-        // TODO: It may be faster if we round N up to the next power of two (std::vector eigenCrossCor)
-        size_t N = data_1.size() + data_2.size() - 1;
-
-        // Zero padding both vectors
-        data_1.resize(N);
-        data_2.resize(N);
-
-        Eigen::FFT<double> fft;
-
-        std::vector<std::complex<double>> fft_first;
-        std::vector<std::complex<double>> fft_second;
-
-        fft.fwd(fft_first, data_1);
-        fft.fwd(fft_second, data_2);
-
-        std::vector<std::complex<double>> fft_result(N);
-        for (size_t i = 0; i < N; ++i)
-            fft_result[i] = fft_first[i] * std::conj(fft_second[i]);
-
-        std::vector<double> cross_cor(N);
-        fft.inv(cross_cor, fft_result);
-
-        // Rotating cross-correlation vector on shift_size
-        std::rotate(cross_cor.begin(), cross_cor.begin() + shift_size, cross_cor.end());
-
-        return cross_cor;
     }
 
     Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1, Eigen::VectorXd & data_2){

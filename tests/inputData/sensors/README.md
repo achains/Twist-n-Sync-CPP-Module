@@ -1,1 +1,0 @@
-## You should place all gyro-session.csv data in this folder
