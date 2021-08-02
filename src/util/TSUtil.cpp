@@ -35,7 +35,7 @@ namespace TSUtil {
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> data) {
         Eigen::MatrixX3d eigen_data(data.size(), 3);
         for (int i = 0; i < data.size(); ++i)
-            eigen_data.row(i) = Eigen::Map<Eigen::VectorXd>(data[i].data(), 3);
+            eigen_data.row(i) = Eigen::Map<Eigen::Vector3d>(data[i].data(), 3);
         return eigen_data;
     }
 
@@ -63,15 +63,18 @@ namespace TSUtil {
     Eigen::VectorXd eigenCrossCor(Eigen::VectorXd & data_1, Eigen::VectorXd & data_2){
         // Cross-cor(x, y) = iFFT(FFT(x) * conj(FFT(y)))
 
-        Eigen::Index shift_size = data_1.size();
+        Eigen::Index shift_size_data1 = data_1.size();
+        Eigen::Index shift_size_data2 = data_2.size();
 
         // Length of Discrete Fourier Transform
         // TODO: It may be faster if we round N up to the next power of two (Eigen::VectorXd eigenCrossCor)
-        Eigen::Index N = data_1.size() + data_2.size() - 1;
+        Eigen::Index N = shift_size_data1 + shift_size_data2 - 1;
 
         // Zero padding both vectors
         data_1.conservativeResize(N);
         data_2.conservativeResize(N);
+        for (Eigen::Index i = shift_size_data1; i < N; ++i) data_1[i] = 0.0;
+        for (Eigen::Index i = shift_size_data2; i < N; ++i) data_2[i] = 0.0;
 
         Eigen::FFT <double> fft;
 
@@ -87,10 +90,10 @@ namespace TSUtil {
         Eigen::VectorXd unbiased_result(N);
         fft.inv(unbiased_result, fft_result);
 
-        // Rotating cross-correlation vector on shift_size
+        // Rotating cross-correlation vector on shift_size_data1
         Eigen::VectorXd cross_cor(N);
-        cross_cor << unbiased_result(Eigen::seq(shift_size, Eigen::last)),
-                     unbiased_result(Eigen::seq(0, shift_size - 1));
+        cross_cor << unbiased_result(Eigen::seq(shift_size_data1, Eigen::last)),
+        unbiased_result(Eigen::seq(0, shift_size_data1 - 1));
 
         return cross_cor.reverse();
     }
