@@ -25,8 +25,10 @@ class TimeSync {
 
  private:
 
-    static Eigen::MatrixX3d interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
-                                            Eigen::VectorXd const & ts_new);
+    static Eigen::MatrixX3d & interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
+                                            Eigen::VectorXd const & ts_new, Eigen::MatrixX3d & gyro_new);
+
+    static Eigen::Vector2d obtainRoots(Eigen::VectorXd const & coeffs, Eigen::Index const & order);
 
     TSUtil::CorrData getInitialIndex() const;
 

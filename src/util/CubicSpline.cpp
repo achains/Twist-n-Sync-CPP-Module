@@ -42,8 +42,6 @@ Eigen::Matrix4Xd CubicSpline::getCoefficients() {
     Eigen::VectorXd A = TSUtil::vectorToEigVectorXd(Y);
     Eigen::VectorXd B = TSUtil::vectorToEigVectorXd(derivative_);
 
-    assert(A.size() == B.size());
-
     double dx = m_spline_.get_x()[1] - m_spline_.get_x()[0];
 
     Eigen::VectorXd C(A.size() - 1);

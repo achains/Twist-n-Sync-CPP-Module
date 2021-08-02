@@ -34,7 +34,7 @@ namespace TSUtil {
 
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> data) {
         Eigen::MatrixX3d eigen_data(data.size(), 3);
-        for (int i = 0; i < data.size(); ++i)
+        for (Eigen::Index i = 0; i < data.size(); ++i)
             eigen_data.row(i) = Eigen::Map<Eigen::Vector3d>(data[i].data(), 3);
         return eigen_data;
     }
@@ -55,7 +55,7 @@ namespace TSUtil {
         return interp.getValuesOnSegment(x_new);
     }
 
-    Eigen::VectorXd quadraticRoots(Eigen::VectorXd const & coeffs){
+    Eigen::Vector2d quadraticRoots(Eigen::VectorXd const & coeffs){
         Eigen::PolynomialSolver<double, 2> solver(coeffs);
         return solver.roots().real();
     }
@@ -67,10 +67,12 @@ namespace TSUtil {
         Eigen::Index shift_size_data2 = data_2.size();
 
         // Length of Discrete Fourier Transform
-        // TODO: It may be faster if we round N up to the next power of two (Eigen::VectorXd eigenCrossCor)
         Eigen::Index N = shift_size_data1 + shift_size_data2 - 1;
 
+        N = static_cast<Eigen::Index> (std::pow(2, std::ceil(std::log2(N))));
+
         // Zero padding both vectors
+
         data_1.conservativeResize(N);
         data_2.conservativeResize(N);
         for (Eigen::Index i = shift_size_data1; i < N; ++i) data_1[i] = 0.0;

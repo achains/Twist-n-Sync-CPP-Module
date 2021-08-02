@@ -9,6 +9,7 @@
 #include "Eigen/Dense"
 
 #include <numeric>
+#include <memory>
 
 
 TimeSync::TimeSync(std::vector<std::vector<double>> const & gyro_first,
@@ -33,9 +34,10 @@ TSUtil::CorrData TimeSync::getInitialIndex() const {
     return {cross_cor, std::distance(cross_cor.begin(), std::max_element(cross_cor.begin(), cross_cor.end()))};
 }
 
-Eigen::MatrixX3d TimeSync::interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
-                                           Eigen::VectorXd const & ts_new) {
-    Eigen::MatrixX3d gyro_new(gyro_old.rows(), 3);
+Eigen::MatrixX3d & TimeSync::interpolateGyro(Eigen::VectorXd const & ts_old, Eigen::MatrixX3d const & gyro_old,
+                                           Eigen::VectorXd const & ts_new, Eigen::MatrixX3d & gyro_new) {
+    assert (gyro_old.rows() == gyro_new.rows());
+
     gyro_new << TSUtil::interpolate(ts_old, gyro_old(Eigen::all, 0), ts_new),
                 TSUtil::interpolate(ts_old, gyro_old(Eigen::all, 1), ts_new),
                 TSUtil::interpolate(ts_old, gyro_old(Eigen::all, 2), ts_new);
@@ -52,9 +54,17 @@ void TimeSync::resample(double const & accuracy){
         Eigen::VectorXd ts_first_new = TSUtil::arangeEigen(ts_first_[0], *ts_first_.end() + dt_, dt_);
         Eigen::VectorXd ts_second_new = TSUtil::arangeEigen(ts_second_[0], *ts_second_.end() + dt_, dt_);
 
-        gyro_first_ = TimeSync::interpolateGyro(ts_first_, gyro_first_, ts_first_new);
-        gyro_second_ = TimeSync::interpolateGyro(ts_second_, gyro_second_, ts_second_new);
+        TimeSync::interpolateGyro(ts_first_, gyro_first_, ts_first_new, gyro_first_);
+        TimeSync::interpolateGyro(ts_second_, gyro_second_, ts_second_new, gyro_second_);
     }
+}
+
+Eigen::Vector2d TimeSync::obtainRoots(Eigen::VectorXd const & coeffs, Eigen::Index const & order){
+    Eigen::VectorXd equation(order);
+    for (auto i = 0; i < order; ++i){
+        equation[i] = static_cast<double>(order - i) * coeffs[i];
+    }
+    return TSUtil::quadraticRoots(equation.reverse());
 }
 
 void TimeSync::obtainDelay(){
@@ -66,26 +76,30 @@ void TimeSync::obtainDelay(){
     TSUtil::CorrData corr_data = TimeSync::getInitialIndex();
     corr_data.initial_index += shift;
 
-    Eigen::MatrixX3d tmp_xx1 = gyro_first_;
-    Eigen::MatrixX3d tmp_xx2 = gyro_second_;
+    Eigen::MatrixX3d tmp_xx1;
+    Eigen::MatrixX3d tmp_xx2;
 
     if (corr_data.initial_index > 0){
-        tmp_xx1 = gyro_first_(Eigen::seq(0, Eigen::last - corr_data.initial_index), Eigen::all);
-        tmp_xx2 = gyro_second_(Eigen::seq(corr_data.initial_index, Eigen::last), Eigen::all);
+        tmp_xx1 = gyro_first_(Eigen::seq(0, Eigen::last - corr_data.initial_index), Eigen::all).eval();
+        tmp_xx2 = gyro_second_(Eigen::seq(corr_data.initial_index, Eigen::last), Eigen::all).eval();
     }
     else if (corr_data.initial_index < 0){
-        tmp_xx1 = gyro_first_(Eigen::seq(-corr_data.initial_index, Eigen::last), Eigen::all);
-        tmp_xx2 = gyro_second_(Eigen::seq(0, corr_data.initial_index), Eigen::all);
+        tmp_xx1 = gyro_first_(Eigen::seq(-corr_data.initial_index, Eigen::last), Eigen::all).eval();
+        tmp_xx2 = gyro_second_(Eigen::seq(0, corr_data.initial_index), Eigen::all).eval();
+    }
+    else{
+        tmp_xx1 = gyro_first_;
+        tmp_xx2 = gyro_second_;
     }
 
-    size_t size = std::min(tmp_xx1.rows(), tmp_xx2.rows());
+    Eigen::Index size = std::min(tmp_xx1.rows(), tmp_xx2.rows());
     tmp_xx1 = tmp_xx1(Eigen::seq(0, size - 1), Eigen::all);
     tmp_xx2 = tmp_xx2(Eigen::seq(0, size - 1), Eigen::all);
 
     // Calibration
-    Eigen::MatrixX3d M = (tmp_xx2.transpose() * tmp_xx1) * (tmp_xx1.transpose() * tmp_xx1).inverse();
+    Eigen::Matrix3d M = (tmp_xx2.transpose() * tmp_xx1) * (tmp_xx1.transpose() * tmp_xx1).inverse();
 
-    gyro_first_ = (M * gyro_first_.transpose()).transpose();
+    gyro_first_ = (M * gyro_first_.transpose()).transpose().eval();
 
     // Cross-correlation re-estimation
     corr_data = TimeSync::getInitialIndex();
@@ -106,11 +120,7 @@ void TimeSync::obtainDelay(){
 
     // Solve quadratic equation to obtain roots
     Eigen::Index order = coeffs.size() - 1;
-    Eigen::VectorXd equation(order);
-    for (auto i = 0; i < order; ++i){
-        equation[i] = static_cast<double>(order - i) * coeffs[i];
-    }
-    Eigen::VectorXd roots = TSUtil::quadraticRoots(equation.reverse());
+    Eigen::Vector2d roots = TimeSync::obtainRoots(coeffs, order);
 
     auto result = *std::max_element(roots.begin(), roots.end());
     std::vector<double> check_solution(order);

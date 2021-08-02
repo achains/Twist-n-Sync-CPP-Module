@@ -24,7 +24,7 @@ namespace TSUtil {
 
     // Implementation of np.roots
     // Quadratic equation: coeffs[2] * x^2 + coeffs[1] * x + coeffs[0] = 0
-    Eigen::VectorXd quadraticRoots(Eigen::VectorXd const & coeffs);
+    Eigen::Vector2d quadraticRoots(Eigen::VectorXd const & coeffs);
 
     Eigen::MatrixX3d vectorToEigMatrixX3d(std::vector<std::vector<double>> data);
 
