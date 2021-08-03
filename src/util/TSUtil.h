@@ -9,7 +9,7 @@
 
 #include <vector>
 
-namespace TSUtil {
+namespace tsutil {
     // Implementation of numpy.arange function
     Eigen::VectorXd arangeEigen(double start, double const & stop, double const & step = 1.0);
 

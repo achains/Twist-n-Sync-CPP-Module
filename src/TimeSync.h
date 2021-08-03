@@ -30,7 +30,7 @@ class TimeSync {
 
     static Eigen::Vector2d obtainRoots(Eigen::VectorXd const & coeffs, Eigen::Index const & order);
 
-    TSUtil::CorrData getInitialIndex() const;
+    tsutil::CorrData getInitialIndex() const;
 
     // 3D angular velocities from devices' gyros
     Eigen::MatrixX3d gyro_first_;

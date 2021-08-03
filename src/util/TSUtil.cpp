@@ -9,7 +9,7 @@
 
 #include <numeric>
 
-namespace TSUtil {
+namespace tsutil {
 
     Eigen::VectorXd arangeEigen(double start, double const & stop, double const & step){
         Eigen::Index size = std::ceil((stop - start) / step);
