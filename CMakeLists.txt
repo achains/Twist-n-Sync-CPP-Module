@@ -10,7 +10,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(SOURCE_FILES main.cpp src/TimeSync.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp)
+set(SOURCE_FILES src/TimeSync.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp)
 set(EXECUTABLE_NAME app_debug)
 
 # Adding .csv gyro data files
@@ -19,6 +19,5 @@ file(COPY ${SENSORS_DATA} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 
-target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
-target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/spline/src")
-target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+add_subdirectory("src")
+add_subdirectory("lib")

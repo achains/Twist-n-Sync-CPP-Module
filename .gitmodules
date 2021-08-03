@@ -1,9 +1,0 @@
-[submodule "lib/eigen"]
-	path = lib/eigen
-	url = https://gitlab.com/libeigen/eigen.git
-[submodule "lib/spline"]
-	path = lib/spline
-	url = https://github.com/ttk592/spline.git
-[submodule "lib/googletest"]
-	path = lib/googletest
-	url = https://github.com/google/googletest.git
