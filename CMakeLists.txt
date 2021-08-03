@@ -10,7 +10,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(SOURCE_FILES src/TimeSync.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp tests/tests.cpp tests/tsutil_tests.cpp)
+set(SOURCE_FILES src/TimeSync.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp tests/tests.cpp tests/tsutil_tests.cpp tests/final_result_tests.cpp)
 set(EXECUTABLE_NAME app_debug)
 
 # Adding .csv gyro data files
@@ -20,6 +20,6 @@ file(COPY ${SENSORS_DATA} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 
 add_subdirectory("src")
-add_subdirectory("lib")
+add_subdirectory("external")
 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC gtest_main)
