@@ -29,7 +29,7 @@ tsutil::CorrData TimeSync::getInitialIndex() const {
     Eigen::VectorXd norm_first = tsutil::getNormOfRows(gyro_first_);
     Eigen::VectorXd norm_second = tsutil::getNormOfRows(gyro_second_);
 
-    Eigen::VectorXd cross_cor = tsutil::eigenCrossCor(norm_first, norm_second);
+    Eigen::VectorXd cross_cor = tsutil::eigenCrossCor(norm_second, norm_first);
 
     return {cross_cor, std::distance(cross_cor.begin(), std::max_element(cross_cor.begin(), cross_cor.end()))};
 }

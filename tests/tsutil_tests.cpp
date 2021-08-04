@@ -7,18 +7,6 @@
 #include "tsutil_tests.h"
 
 namespace tsutil_tests{
-    template <typename T1, typename T2>
-    testing::AssertionResult compareVectors(T1 const & vec1, T2 const & vec2, double eps){
-
-        if (vec1.size() != vec2.size())
-            return testing::AssertionFailure() << "vec1.size() != vec2.size() <<>> "
-                                               << vec1.size() << " != " << vec2.size();
-
-        for (Eigen::Index i = 0; i < vec1.size(); ++i)
-            if (std::abs(vec1[i] - vec2[i]) > eps)
-                return testing::AssertionFailure() << "Elements at index " << i << " are not equal with eps=" << eps;
-        return testing::AssertionSuccess();
-    }
 
     TEST(VectorTransform, VectorToEigen){
         std::vector<double> vec1{1., 2., 3., 4., 5., 6.};
