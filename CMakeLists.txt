@@ -1,25 +1,32 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.14)
 project(Twist_n_Sync_CPP_Module)
+
+# Set this flag ON if you want to build tests
+option(BUILD_TESTS "Build an executable with tests" OFF)
+
+# Compiler prerequisites
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # By default select Debug build
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif(NOT CMAKE_BUILD_TYPE)
 
-# compiler settings
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+# If Build type is Release, then turn on optimizations
+if (CMAKE_BUILD_TYPE MATCHES RELEASE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+endif()
 
-set(SOURCE_FILES src/TimeSync.cpp src/util/TSUtil.cpp src/util/CubicSpline.cpp tests/tests.cpp tests/tsutil_tests.cpp tests/final_result_tests.cpp)
-set(EXECUTABLE_NAME app_debug)
+# Prevent In-Source Builds
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+message(FATAL_ERROR "In-source build detected!")
+endif()
 
-# Adding .csv gyro data files
-file(GLOB SENSORS_DATA ${CMAKE_SOURCE_DIR}/tests/inputData/sensors)
-file(COPY ${SENSORS_DATA} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_subdirectory(src)
+add_subdirectory(src/util)
+add_subdirectory(external)
 
-add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
-
-add_subdirectory("src")
-add_subdirectory("external")
-
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC gtest_main)
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
