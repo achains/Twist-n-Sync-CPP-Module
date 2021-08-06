@@ -24,15 +24,31 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # Default build type is Release
-      - name: Run all tests
-        uses: nicledomaS/cmake_build_action@v1.4
-        with:
-              cmake_args: -DBUILD_TESTS=ON
-      - name: Run all tests with ASan check
-        uses: nicledomaS/cmake_build_action@v1.4
-        with:
-              cmake_args: -DBUILD_TESTS=ON;-DUSE_ASAN=ON
+      
+      - name: Build tests in Release mode
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ..
+          make
+      - name: Run tests in Release mode
+        run: |
+          cd tests
+          ./run_tests
+          cd ..
+          cmake --build . --target clean
+      - name: Build tests in Release mode with ASan
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DUSE_ASAN=ON ..
+          make
+      - name: Run tests in Release mode with ASan
+        run: |
+          cd tests
+          ./run_tests
+          cd ..
+          cmake --build . --target clean          
+          
+          
+             
               
 
