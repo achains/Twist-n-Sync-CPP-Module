@@ -1,3 +1,5 @@
+enable_testing()
+
 # ###############################################
 # Fetching googletest
 include(FetchContent)
@@ -26,3 +28,6 @@ target_include_directories(run_tests PUBLIC "${CMAKE_BINARY_DIR}/_deps/googletes
 
 target_link_libraries(run_tests PUBLIC gtest_main)
 target_link_libraries(run_tests PUBLIC twist_n_sync)
+
+include(GoogleTest)
+gtest_discover_tests(run_tests)
