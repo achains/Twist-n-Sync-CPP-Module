@@ -40,6 +40,7 @@ Custom CMake options are supported:
 | ------ | ------ | ------ |
 | -DBUILD_TESTS | ON / OFF | Build test executable, OFF by default |
 | -DUSE_ASAN | ON / OFF | Build with [ASan] verification, OFF by default |
+
 By default project is built in Debug mode. Specify -DCMAKE_BUILD_TYPE option if you want to build in Release mode with -O2 optimization on.
 ## License
 
