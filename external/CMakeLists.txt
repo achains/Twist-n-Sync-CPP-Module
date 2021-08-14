@@ -12,9 +12,16 @@ FetchContent_Declare(
         GIT_TAG origin/master
 )
 
-FetchContent_MakeAvailable(eigen)
-FetchContent_MakeAvailable(spline)
+FetchContent_GetProperties(eigen)
+if(NOT eigen_POPULATED)
+    FetchContent_Populate(eigen)
+    set(eigen_EIGEN_BUILD_DOC OFF)
+    set(eigen_BUILD_TESTS OFF)
+    target_include_directories(twist_n_sync PUBLIC "${CMAKE_BINARY_DIR}/_deps/eigen-src")
+endif()
 
-# Including fetched content
-target_include_directories(twist_n_sync PUBLIC "${CMAKE_BINARY_DIR}/_deps/eigen-src")
-target_include_directories(twist_n_sync PUBLIC "${CMAKE_BINARY_DIR}/_deps/spline-src/src")
+FetchContent_GetProperties(spline)
+if(NOT spline_POPULATED)
+    FetchContent_Populate(spline)
+    target_include_directories(twist_n_sync PUBLIC "${CMAKE_BINARY_DIR}/_deps/spline-src/src")
+endif()
