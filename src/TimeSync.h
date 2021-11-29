@@ -15,11 +15,11 @@ class TimeSync {
                       std::vector<std::vector<double>> const & gyro_second,
                       std::vector<double> const & ts_first,
                       std::vector<double> const & ts_second,
-                      bool const & do_resample = true);
+                      bool do_resample = true);
 
     void obtainDelay();
 
-    void resample(double const & accuracy);
+    void resample(double step);
 
     double getTimeDelay() const;
 
