@@ -16,7 +16,7 @@ TimeSync::TimeSync(std::vector<std::vector<double>> const & gyro_first,
                    std::vector<std::vector<double>> const & gyro_second,
                    std::vector<double> const & ts_first,
                    std::vector<double> const & ts_second,
-                   bool const & do_resample):
+                   bool do_resample):
                         gyro_first_(tsutil::vectorToEigMatrixX3d(gyro_first)),
                         gyro_second_(tsutil::vectorToEigMatrixX3d(gyro_second)),
                         ts_first_(tsutil::vectorToEigVectorXd(ts_first)),
@@ -44,11 +44,16 @@ Eigen::MatrixX3d & TimeSync::interpolateGyro(Eigen::VectorXd const & ts_old, Eig
     return gyro_new;
 }
 
-void TimeSync::resample(double const & accuracy){
-    double time_first_mean = tsutil::adjDiffEigen(ts_first_).mean();
-    double time_second_mean = tsutil::adjDiffEigen(ts_second_).mean();
+void TimeSync::resample(double step=__DBL_MAX__){
+    if (step != __DBL_MAX__){
+        dt_ = step;
+    }
+    else{
+        double time_first_mean = tsutil::adjDiffEigen(ts_first_).mean();
+        double time_second_mean = tsutil::adjDiffEigen(ts_second_).mean();
+        dt_ = std::min({step, time_first_mean, time_second_mean});
+    }
 
-    dt_ = std::min({accuracy, time_first_mean, time_second_mean});
 
     if (do_resample_){
         Eigen::VectorXd ts_first_new = tsutil::arangeEigen(ts_first_[0], *ts_first_.end() + dt_, dt_);
